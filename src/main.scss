@@ -1,0 +1,40 @@
+* {
+  font-family: 'Roboto', sans-serif;
+  user-select: none;
+}
+html,
+body {
+  font-size: 14px;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+body::-webkit-scrollbar {
+  display: none;
+}
+#root {
+  padding: 20px;
+  margin: 0 auto;
+  max-width: 1440px;
+  min-height: 100%;
+}
+a {
+  all: unset;
+  cursor: pointer;
+  font-weight: 600;
+  position: relative;
+  transition:
+    color 0.3s ease-in-out,
+    text-shadow 0.3s ease-in-out;
+  &:hover {
+    text-decoration: none;
+    color: inherit;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+  }
+}
+@media (max-width: 768px) {
+  #root {
+    padding: 0;
+  }
+}

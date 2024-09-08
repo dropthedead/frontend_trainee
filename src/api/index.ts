@@ -1,17 +1,33 @@
 import axios from 'axios';
 import { API_URL } from '@/utils/constants';
-import { useInfiniteQuery, InfiniteData } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  InfiniteData,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import type { Advertisment } from '../../types';
 
 type PageParam = {
-  start: number;
-  limit: number;
+  _page: number;
+  _per_page: number;
 };
-const pageParamDefault: PageParam = { start: 0, limit: 10 };
+
+export type NewAdvertisment = Required<
+  Pick<Advertisment, 'imageUrl' | 'description' | 'price' | 'name'>
+>;
+
+type AdvertismentFeed = {
+  data: Advertisment[];
+  next: number;
+  pages: number;
+};
+
+const pageParamDefault: PageParam = { _page: 1, _per_page: 10 };
 
 const getAdvertisments = async (pageParam: PageParam = pageParamDefault) => {
-  const response = await axios.get<Advertisment[]>(
+  const response = await axios.get<AdvertismentFeed>(
     `${API_URL}/advertisements`,
     {
       params: pageParam,
@@ -20,22 +36,42 @@ const getAdvertisments = async (pageParam: PageParam = pageParamDefault) => {
   return response.data;
 };
 
-export const useGetAdvertisment = (limit: number) => {
+export const useGetAdvertisment = (perPage: number) => {
   return useInfiniteQuery<
-    Advertisment[],
+    AdvertismentFeed,
     unknown,
-    InfiniteData<Advertisment[]>,
+    InfiniteData<AdvertismentFeed>,
     unknown[],
     number
   >({
-    queryKey: ['advertisments', limit],
+    queryKey: ['advertisments', perPage],
     queryFn: ({ pageParam }) =>
-      getAdvertisments({ start: pageParam, limit: limit }),
-    initialPageParam: 0,
+      getAdvertisments({ _page: pageParam, _per_page: perPage }),
+    initialPageParam: 1,
 
-    getNextPageParam: (lastPage, allPages, lastPageParam, allPageParams) => {
-      console.log('123', lastPageParam);
-      return lastPageParam + 10;
+    getNextPageParam: (lastPage) => {
+      return lastPage.next;
+    },
+  });
+};
+
+const createAdvertisment = async (newAd: NewAdvertisment) => {
+  const response = await axios.post(`${API_URL}/advertisements`, {
+    ...newAd,
+    createdAt: new Date().toISOString(),
+    views: 0,
+    likes: 0,
+  });
+  return response.data;
+};
+
+export const useCreateAdvertisment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createAdvertisment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['advertisments'] });
     },
   });
 };

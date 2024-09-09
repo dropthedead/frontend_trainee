@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 
 type ErrorProps = {
-  error: { message: string }; // Обновляем тип для кастомной ошибки
+  error: { message: string };
 };
 
 export const Error = ({ error }: ErrorProps) => {

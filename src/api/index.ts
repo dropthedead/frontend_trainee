@@ -5,6 +5,7 @@ import {
   InfiniteData,
   useMutation,
   useQueryClient,
+  useQuery,
 } from '@tanstack/react-query';
 
 import type { Advertisment } from '../../types';
@@ -26,7 +27,7 @@ type AdvertismentFeed = {
 
 const pageParamDefault: PageParam = { _page: 1, _per_page: 10 };
 
-const getAdvertisments = async (pageParam: PageParam = pageParamDefault) => {
+const getAllAdvertisments = async (pageParam: PageParam = pageParamDefault) => {
   const response = await axios.get<AdvertismentFeed>(
     `${API_URL}/advertisements`,
     {
@@ -36,7 +37,7 @@ const getAdvertisments = async (pageParam: PageParam = pageParamDefault) => {
   return response.data;
 };
 
-export const useGetAdvertisment = (perPage: number) => {
+export const useGetAllAdvertisments = (perPage: number) => {
   return useInfiniteQuery<
     AdvertismentFeed,
     unknown,
@@ -46,7 +47,7 @@ export const useGetAdvertisment = (perPage: number) => {
   >({
     queryKey: ['advertisments', perPage],
     queryFn: ({ pageParam }) =>
-      getAdvertisments({ _page: pageParam, _per_page: perPage }),
+      getAllAdvertisments({ _page: pageParam, _per_page: perPage }),
     initialPageParam: 1,
 
     getNextPageParam: (lastPage) => {
@@ -72,6 +73,44 @@ export const useCreateAdvertisment = () => {
     mutationFn: createAdvertisment,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['advertisments'] });
+    },
+  });
+};
+
+const getAdvertisment = async (id: string) => {
+  const response = await axios.get<Advertisment>(
+    `${API_URL}/advertisements/${id}`,
+  );
+  return response.data;
+};
+
+export const useGetAdvertisment = (id: string) => {
+  return useQuery<Advertisment, unknown>({
+    queryKey: ['advertisments', id],
+    queryFn: () => getAdvertisment(id),
+    enabled: !!id,
+  });
+};
+
+const patchAdvertisment = async (
+  id: string,
+  updatedData: Partial<Advertisment>,
+) => {
+  const response = await axios.patch(
+    `${API_URL}/advertisements/${id}`,
+    updatedData,
+  );
+  return response.data;
+};
+
+export const usePatchAdvertisment = (id: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (updatedData: Partial<Advertisment>) =>
+      patchAdvertisment(id, updatedData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['advertisments', id] });
     },
   });
 };

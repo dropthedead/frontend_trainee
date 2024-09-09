@@ -11,7 +11,7 @@ import {
   MenuItem,
   SelectChangeEvent,
 } from '@mui/material';
-import { useGetAdvertisment } from '@/api';
+import { useGetAllAdvertisments } from '@/api';
 import { useEffect, useState } from 'react';
 import { Loader } from '@/components/common/loader';
 import { Error } from '@/components/common/error';
@@ -27,17 +27,18 @@ const MyAds = () => {
   const [currentPage, setCurrentPage] = useState(parseInt(params._page) || 1);
 
   const { data, error, isLoading, fetchNextPage, isFetching, refetch } =
-    useGetAdvertisment(perPage);
+    useGetAllAdvertisments(perPage);
 
   const handleChange = (event: SelectChangeEvent<number>) => {
     const newPerPage = parseInt(event.target.value as string, 10);
+    setCurrentPage(1);
     setPerPage(newPerPage);
     refetch();
   };
 
   const handlePageChange = (index: number): void => {
     setCurrentPage(index + 1);
-    fetchNextPage({ pageParam: index + 1 });
+    fetchNextPage();
     window.scrollTo(0, 0);
   };
   useEffect(() => {

@@ -10,6 +10,7 @@ import {
   Select,
   MenuItem,
   SelectChangeEvent,
+  Divider,
 } from '@mui/material';
 import { useGetAllAdvertisments } from '@/api';
 import { useEffect, useState } from 'react';
@@ -17,17 +18,28 @@ import { Loader } from '@/components/common/loader';
 import { Error } from '@/components/common/error';
 import CreateAdModal from './components/CreateAdModal';
 import { Link, useSearchParams } from 'react-router-dom';
+import SearchAds from './components/SearchAds';
+import { Favorite, Visibility } from '@mui/icons-material';
+import { formatPrice } from '@/utils/formatPrice';
+import FilterAds from './components/FilterAds';
 
 const MyAds = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const params = Object.fromEntries([...searchParams]);
-
   const [perPage, setPerPage] = useState(parseInt(params._per_page) || 10);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(parseInt(params._page) || 1);
+  const [views, setViews] = useState<number | undefined>(params.views ? parseInt(params.views) : undefined);
+  const [likes, setLikes] = useState<number | undefined>(params.likes ? parseInt(params.likes) : undefined);
+  const [price, setPrice] = useState<number | undefined>(params.price ? parseInt(params.price) : undefined);
 
-  const { data, error, isLoading, fetchNextPage, isFetching, refetch } =
-    useGetAllAdvertisments(perPage);
+  const { data, error, isLoading, isFetching, refetch } = useGetAllAdvertisments(
+    perPage,
+    currentPage,
+    views,
+    likes,
+    price,
+  );
 
   const handleChange = (event: SelectChangeEvent<number>) => {
     const newPerPage = parseInt(event.target.value as string, 10);
@@ -38,19 +50,36 @@ const MyAds = () => {
 
   const handlePageChange = (index: number): void => {
     setCurrentPage(index + 1);
-    fetchNextPage();
     window.scrollTo(0, 0);
   };
+
+  const handleFilterClick = (filterData: { views?: number; likes?: number; price?: number }) => {
+    setViews(filterData.views);
+    setLikes(filterData.likes);
+    setPrice(filterData.price);
+    setCurrentPage(1);
+    refetch();
+  };
+
+  const handleResetFilters = () => {
+    setViews(undefined);
+    setLikes(undefined);
+    setPrice(undefined);
+    refetch();
+  };
+
   useEffect(() => {
-    setSearchParams(
-      {
-        _page: currentPage.toString(),
-        _per_page: perPage.toString(),
-      },
-      { replace: true },
-    );
-  }, [currentPage, perPage, setSearchParams]);
-  const paginationButtons = new Array(data?.pages[0].pages ?? 0).fill(1);
+    const newParams: Record<string, string> = {
+      _page: currentPage.toString(),
+      _per_page: perPage.toString(),
+    };
+    if (views) newParams.views = views.toString();
+    if (likes) newParams.likes = likes.toString();
+    if (price) newParams.price = price.toString();
+    setSearchParams(newParams, { replace: true });
+  }, [currentPage, perPage, views, likes, price, setSearchParams]);
+
+  const paginationButtons = new Array(data?.pages ?? 0).fill(1);
 
   return (
     <>
@@ -59,87 +88,212 @@ const MyAds = () => {
         <Loader />
       ) : (
         <Box>
-          <Typography variant="h4" gutterBottom>
-            Мои Объявления
-          </Typography>
-          <FormControl fullWidth>
-            <InputLabel id="ads_perPage">
-              Кол-во объявлений на странице
-            </InputLabel>
-            <Select
-              labelId="ads_limit"
-              id="ads_limit"
-              value={perPage}
-              label="Кол-во объявлений на странице"
-              onChange={handleChange}
-            >
-              <MenuItem value={5}>5</MenuItem>
-              <MenuItem value={10}>10</MenuItem>
-              <MenuItem value={50}>50</MenuItem>
-            </Select>
-          </FormControl>
-          <Button
-            onClick={() => setIsOpenModal(true)}
-            variant="contained"
-            color="primary"
-            sx={{ mt: 2 }}
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'end',
+              alignItems: 'center',
+              gap: '10px',
+            }}
           >
-            Добавить объявление
-          </Button>
-          {data?.pages[currentPage - 1]?.data.map((ad) => (
-            <Link key={ad.id} to={`/advertisment/${ad.id}`}>
-              <Card sx={{ maxWidth: 345, marginBottom: 2 }}>
-                {ad.imageUrl && (
-                  <CardMedia
-                    component="img"
-                    image={ad.imageUrl}
-                    alt={ad.name}
-                    sx={{
-                      objectFit: 'cover',
-                      width: '100%',
-                      height: '200px',
-                    }}
-                  />
-                )}
-                <CardContent>
-                  <Typography gutterBottom variant="h5" component="div">
-                    {ad.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {ad.description}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Price: {ad.price}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Views: {ad.views}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Likes: {ad.likes}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-
-          <Box textAlign="center" mt={2}>
-            {paginationButtons.map((_, index) => (
-              <Button
-                key={index}
-                onClick={() => handlePageChange(index)}
-                variant={index + 1 === currentPage ? 'contained' : 'outlined'}
-                sx={{ margin: 1 }}
+            <Box>
+              <Typography variant="h3" gutterBottom textAlign={'center'} margin={'20px'}>
+                Мои Объявления
+              </Typography>
+            </Box>
+            <FormControl sx={{ width: '300px' }} color="secondary">
+              <InputLabel id="ads_perPage">Кол-во объявлений на странице</InputLabel>
+              <Select
+                labelId="ads_limit"
+                id="ads_limit"
+                value={perPage}
+                label="Кол-во объявлений на странице"
+                onChange={handleChange}
               >
-                {index + 1}
-              </Button>
-            ))}
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
+          <FilterAds
+            onFilter={handleFilterClick}
+            onReset={handleResetFilters}
+            initialValues={{ views, likes, price }}
+          />
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: '20px',
+            }}
+          >
+            <SearchAds />
+          </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'end',
+              marginBottom: '20px',
+            }}
+          >
+            <Button onClick={() => setIsOpenModal(true)} variant="contained" color="primary" sx={{ mt: 2 }}>
+              Добавить объявление
+            </Button>
+          </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              width: '100%',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            {data?.data && data.data.length === 0 ? (
+              <Typography variant="h5" color="text.secondary" textAlign="center" marginTop="20px">
+                По выбранным фильтрам ничего не найдено! Попробуйте сбросить фильтры или изменить параметры поиска!
+              </Typography>
+            ) : (
+              data?.data.map((ad) => (
+                <Link key={ad.id} to={`/advertisment/${ad.id}`} style={{ textDecoration: 'none', width: '100%' }}>
+                  <Card
+                    sx={{
+                      width: '100%',
+                      marginBottom: 2,
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&:before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.3) 100%)',
+                        opacity: 0,
+                        transition: 'opacity 0.4s ease',
+                        zIndex: 1,
+                      },
+                      '&:hover:before': {
+                        opacity: 1,
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      <Typography gutterBottom variant="h4" component="div" textAlign="center" mt={4}>
+                        {ad.name}
+                      </Typography>
+                      <Box
+                        sx={{
+                          width: '80%',
+                          maxWidth: 800,
+                          marginY: 2,
+                        }}
+                      >
+                        <Divider variant="middle" sx={{ width: '100%' }} />
+                      </Box>
+                    </Box>
+                    {ad.imageUrl && (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <CardMedia
+                          component="img"
+                          image={ad.imageUrl}
+                          alt={ad.name}
+                          sx={{
+                            objectFit: 'cover',
+                            width: '400px',
+                            height: '100%',
+                            maxHeight: '400px',
+                            alignItems: 'center',
+                          }}
+                        />
+                      </Box>
+                    )}
+                    <CardContent>
+                      <Typography variant="h5" color="text.primary" gutterBottom>
+                        Описание:
+                      </Typography>
+                      <Typography
+                        variant="h5"
+                        color="text.secondary"
+                        sx={{
+                          wordWrap: 'break-word',
+                          overflowWrap: 'break-word',
+                          width: '100%',
+                          whiteSpace: 'normal',
+                        }}
+                      >
+                        {ad.description
+                          ? ad.description.length > 300
+                            ? `${ad.description.slice(0, 300)}...`
+                            : ad.description
+                          : ''}
+                      </Typography>
+                      <Typography variant="h5" color="text.secondary" textAlign={'right'} fontWeight={600}>
+                        {formatPrice(ad.price)}
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'end',
+                          marginTop: 2,
+                        }}
+                      >
+                        <Visibility color="action" sx={{ marginRight: 1 }} />
+                        <Typography variant="h6" color="text.secondary">
+                          {ad.views}
+                        </Typography>
+                      </Box>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'end',
+                          marginTop: 2,
+                        }}
+                      >
+                        <Favorite color="error" sx={{ marginRight: 1 }} />
+                        <Typography variant="h6" color="text.secondary">
+                          {ad.likes}
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))
+            )}
+          </Box>
+          {data?.pages && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              {paginationButtons.map((_, index) => (
+                <Button
+                  key={index}
+                  variant={index + 1 === currentPage ? 'contained' : 'outlined'}
+                  onClick={() => handlePageChange(index)}
+                >
+                  {index + 1}
+                </Button>
+              ))}
+            </Box>
+          )}
+          <CreateAdModal isOpen={isOpenModal} handleClose={() => setIsOpenModal(false)} />
         </Box>
       )}
-      <CreateAdModal
-        isOpen={isOpenModal}
-        handleClose={() => setIsOpenModal(false)}
-      />
     </>
   );
 };

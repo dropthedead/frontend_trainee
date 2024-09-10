@@ -1,18 +1,17 @@
 import axios from 'axios';
 import { API_URL } from '@/utils/constants';
-import {
-  useInfiniteQuery,
-  InfiniteData,
-  useMutation,
-  useQueryClient,
-  useQuery,
-} from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import type { Advertisment } from '../../types';
 
 type PageParam = {
   _page: number;
   _per_page: number;
+  _views?: number;
+  _likes?: number;
+  _price?: number;
 };
 
 export type NewAdvertisment = Required<
@@ -25,9 +24,20 @@ type AdvertismentFeed = {
   pages: number;
 };
 
-const pageParamDefault: PageParam = { _page: 1, _per_page: 10 };
+const getAllAdsForSearch = async (): Promise<Advertisment[]> => {
+  const response = await axios.get<Advertisment[]>(`${API_URL}/advertisements`);
+  return response.data;
+};
 
-const getAllAdvertisments = async (pageParam: PageParam = pageParamDefault) => {
+export const useGetAllAdsForSearch = () => {
+  return useQuery({
+    queryKey: ['allAds'],
+    queryFn: getAllAdsForSearch,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+const getAllAdvertisments = async (pageParam: PageParam) => {
   const response = await axios.get<AdvertismentFeed>(
     `${API_URL}/advertisements`,
     {
@@ -36,26 +46,25 @@ const getAllAdvertisments = async (pageParam: PageParam = pageParamDefault) => {
   );
   return response.data;
 };
-
-export const useGetAllAdvertisments = (perPage: number) => {
-  return useInfiniteQuery<
-    AdvertismentFeed,
-    unknown,
-    InfiniteData<AdvertismentFeed>,
-    unknown[],
-    number
-  >({
-    queryKey: ['advertisments', perPage],
-    queryFn: ({ pageParam }) =>
-      getAllAdvertisments({ _page: pageParam, _per_page: perPage }),
-    initialPageParam: 1,
-
-    getNextPageParam: (lastPage) => {
-      return lastPage.next;
-    },
+export const useGetAllAdvertisments = (
+  perPage: number,
+  currentPage: number,
+  views?: number,
+  likes?: number,
+  price?: number,
+) => {
+  return useQuery({
+    queryKey: ['advertisments', perPage, currentPage, views, likes, price],
+    queryFn: () =>
+      getAllAdvertisments({
+        _page: currentPage,
+        _per_page: perPage,
+        ...(views && { views_gte: views }),
+        ...(likes && { likes_gte: likes }),
+        ...(price && { price_gte: price }),
+      }),
   });
 };
-
 const createAdvertisment = async (newAd: NewAdvertisment) => {
   const response = await axios.post(`${API_URL}/advertisements`, {
     ...newAd,
@@ -70,7 +79,12 @@ export const useCreateAdvertisment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createAdvertisment,
+    mutationFn: (newAdData: NewAdvertisment) =>
+      toast.promise(createAdvertisment(newAdData), {
+        pending: 'Создаем объявление...',
+        success: 'Объявление успешно создано!',
+        error: 'Ошибка при создании объявления!',
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['advertisments'] });
     },
@@ -108,7 +122,32 @@ export const usePatchAdvertisment = (id: string) => {
 
   return useMutation({
     mutationFn: (updatedData: Partial<Advertisment>) =>
-      patchAdvertisment(id, updatedData),
+      toast.promise(patchAdvertisment(id, updatedData), {
+        pending: 'Обновляем объявление...',
+        success: 'Объявление успешно обновлено!',
+        error: 'Ошибка при обновлении объявления!',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['advertisments', id] });
+    },
+  });
+};
+
+const deleteAdvertisment = async (id: string) => {
+  const response = await axios.delete(`${API_URL}/advertisements/${id}`);
+  return response.data;
+};
+
+export const useDeleteAdvertisment = (id: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) =>
+      toast.promise(deleteAdvertisment(id), {
+        pending: 'Удаляем объявление...',
+        success: 'Объявление успешно удалено!',
+        error: 'Ошибка при удалении объявления!',
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['advertisments', id] });
     },

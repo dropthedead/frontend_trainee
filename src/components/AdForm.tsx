@@ -45,15 +45,21 @@ const AdForm: React.FC<AdFormProps> = ({
   }, [watchImageUrl, errors.imageUrl]);
 
   const handleReset = () => {
-    reset(defaultValues);
-    setPreviewUrl(defaultValues?.imageUrl);
-    if (onReset) {
-      onReset();
+    if (!isPending) {
+      reset(defaultValues);
+      setPreviewUrl(defaultValues?.imageUrl);
+      if (onReset) {
+        onReset();
+      }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <Box
+      component="form"
+      onSubmit={handleSubmit(onSubmit)}
+      style={{ padding: '20px' }}
+    >
       <TextField
         fullWidth
         label="Название"
@@ -127,11 +133,16 @@ const AdForm: React.FC<AdFormProps> = ({
         >
           {isPending ? 'Сохранение...' : 'Сохранить'}
         </Button>
-        <Button type="button" variant="outlined" onClick={handleReset}>
+        <Button
+          type="button"
+          variant="contained"
+          color="secondary"
+          onClick={handleReset}
+        >
           Сбросить
         </Button>
       </Box>
-    </form>
+    </Box>
   );
 };
 

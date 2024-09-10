@@ -22,9 +22,6 @@ const CreateAdModal = ({
         handleClose();
         navigate(`/advertisment/${newData.id}`);
       },
-      onError: (error) => {
-        console.error('Ошибка при создании объявления:', error.message);
-      },
     });
   };
 
@@ -38,29 +35,33 @@ const CreateAdModal = ({
           transform: 'translate(-50%, -50%)',
           width: { xs: '100%', sm: 450 },
           bgcolor: 'background.paper',
-          p: { xs: 2, sm: 4 },
+          p: { xs: 2, sm: 4, lg: 0 },
           boxShadow: 24,
           borderRadius: '8px',
           display: 'flex',
           flexDirection: 'column',
         }}
       >
-        <IconButton
-          aria-label="close"
-          onClick={handleClose}
+        <Box
           sx={{
-            position: 'absolute',
-            right: 16,
-            top: 16,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: 2,
+            pt: 2,
           }}
         >
-          <Close />
-        </IconButton>
-
-        <Typography variant="h6" mb={2}>
-          Создать новое объявление
-        </Typography>
-
+          <Typography variant="h5">Создать новое объявление</Typography>
+          <IconButton
+            aria-label="close"
+            onClick={handleClose}
+            sx={{
+              position: 'relative',
+            }}
+          >
+            <Close />
+          </IconButton>
+        </Box>
         <AdForm onSubmit={onSubmit} isPending={isPending} />
       </Box>
     </Modal>

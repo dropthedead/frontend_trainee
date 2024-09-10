@@ -4,6 +4,7 @@ import MyAds from '@/pages/MyAds';
 import Advertisment from '@/pages/AdCard';
 import Orders from '@/pages/Orders';
 import NotFound from '@/pages/NotFound';
+import { home, myAds, adCard, orders } from '@/router/paths';
 
 const routes: RouteObject[] = [
   {
@@ -11,19 +12,19 @@ const routes: RouteObject[] = [
     element: <App />,
     children: [
       {
-        path: '/',
+        path: `${home}`,
         element: <Navigate to="/myads" replace />,
       },
       {
-        path: '/myads',
+        path: `${myAds}`,
         element: <MyAds />,
       },
       {
-        path: '/advertisment/:id',
+        path: `${adCard}:id`,
         element: <Advertisment />,
       },
       {
-        path: '/orders',
+        path: `${orders}`,
         element: <Orders />,
       },
       {

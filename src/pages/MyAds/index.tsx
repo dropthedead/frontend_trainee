@@ -26,7 +26,10 @@ import FilterAds from './components/FilterAds';
 const MyAds = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const params = Object.fromEntries([...searchParams]);
-  const [perPage, setPerPage] = useState(parseInt(params._per_page) || 10);
+
+  const storedPerPage = localStorage.getItem('perPage');
+  const initialPerPage = storedPerPage ? parseInt(storedPerPage, 10) : parseInt(params._per_page) || 10;
+  const [perPage, setPerPage] = useState(initialPerPage);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(parseInt(params._page) || 1);
   const [views, setViews] = useState<number | undefined>(params.views ? parseInt(params.views) : undefined);
@@ -45,6 +48,7 @@ const MyAds = () => {
     const newPerPage = parseInt(event.target.value as string, 10);
     setCurrentPage(1);
     setPerPage(newPerPage);
+    localStorage.setItem('perPage', newPerPage.toString());
     refetch();
   };
 
@@ -87,7 +91,7 @@ const MyAds = () => {
       {isLoading || isFetching ? (
         <Loader />
       ) : (
-        <Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <Box
             sx={{
               display: 'flex',
@@ -121,25 +125,16 @@ const MyAds = () => {
             onReset={handleResetFilters}
             initialValues={{ views, likes, price }}
           />
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              gap: '20px',
-            }}
-          >
-            <SearchAds />
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'end',
-              marginBottom: '20px',
-            }}
-          >
-            <Button onClick={() => setIsOpenModal(true)} variant="contained" color="primary" sx={{ mt: 2 }}>
-              Добавить объявление
-            </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
+              <SearchAds />
+            </Box>
+
+            <Box sx={{ marginLeft: '20px' }}>
+              <Button onClick={() => setIsOpenModal(true)} variant="contained" color="primary">
+                Добавить объявление
+              </Button>
+            </Box>
           </Box>
           <Box
             sx={{
@@ -152,7 +147,8 @@ const MyAds = () => {
           >
             {data?.data && data.data.length === 0 ? (
               <Typography variant="h5" color="text.secondary" textAlign="center" marginTop="20px">
-                По выбранным фильтрам ничего не найдено! Попробуйте сбросить фильтры или изменить параметры поиска!
+                По выбранным фильтрам ничего не найдено! Попробуйте сбросить фильтры и/или изменить параметры
+                фильтрации!&#128519;
               </Typography>
             ) : (
               data?.data.map((ad) => (
@@ -278,8 +274,8 @@ const MyAds = () => {
               ))
             )}
           </Box>
-          {data?.pages && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          {data?.pages || data?.data.length === 0 ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 0, mb: 3, gap: '5px' }}>
               {paginationButtons.map((_, index) => (
                 <Button
                   key={index}
@@ -290,7 +286,7 @@ const MyAds = () => {
                 </Button>
               ))}
             </Box>
-          )}
+          ) : null}
           <CreateAdModal isOpen={isOpenModal} handleClose={() => setIsOpenModal(false)} />
         </Box>
       )}

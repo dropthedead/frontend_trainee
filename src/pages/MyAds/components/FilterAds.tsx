@@ -58,19 +58,20 @@ const FilterAds: React.FC<FilterProps> = ({ onFilter, onReset, initialValues }) 
           {...register('price')}
           onChange={handleInputChange}
         />
-        <Box sx={{ display: 'flex', gap: '10px' }}>
-          <Button type="submit" size="small" variant="contained" color="primary" sx={{ mt: 2 }}>
+        <Box sx={{ display: 'flex', gap: '10px', alignItems: 'baseline' }}>
+          <Button type="submit" size="medium" variant="contained" fullWidth color="primary" sx={{ p: 2 }}>
             Отфильтровать
           </Button>
           <Button
             type="button"
-            size="small"
+            size="medium"
             variant="contained"
             color="secondary"
             onClick={handleResetFilters}
-            sx={{ mt: 2 }}
+            fullWidth={true}
+            sx={{ p: 2 }}
           >
-            Сбросить фильтры
+            Сбросить
           </Button>
         </Box>
       </Box>

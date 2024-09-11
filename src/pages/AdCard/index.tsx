@@ -4,12 +4,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useDeleteAdvertisment, useGetAdvertisment, usePatchAdvertisment } from '@/api/advertisments';
 import { Favorite, Visibility } from '@mui/icons-material';
 import AdForm from '@/components/AdForm';
-
-import type { NewAdvertisment } from '@/api/advertisments';
 import { formatPrice } from '@/utils/formatPrice';
 import { Loader } from '@/components/common/loader';
 import CreateAdButton from '@/components/CreateAdButton';
 import { home } from '@/router/paths';
+
+import type { NewAdvertisment } from '@/api/advertisments';
 
 const Advertisment = () => {
   const { id } = useParams<{ id: string }>();

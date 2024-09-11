@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Box, TextField, List, ListItem, Backdrop, Typography, InputAdornment, IconButton } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { useGetAllAdsForSearch } from '@/api';
+import { useGetAllAdsForSearch } from '@/api/advertisments';
 import type { Advertisment } from '../../../../types';
 import { useDebounce } from 'use-debounce';
 import SearchIcon from '@mui/icons-material/Search';

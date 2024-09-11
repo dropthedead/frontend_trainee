@@ -1,10 +1,10 @@
 import { Box, TextField, Button, CardMedia, Typography } from '@mui/material';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { adSchema } from '@/utils/adValidationScheme';
+import { adValidationSchema } from '@/utils/adValidationSchema';
 import { useState, useEffect } from 'react';
 
-import type { NewAdvertisment } from '@/api';
+import type { NewAdvertisment } from '@/api/advertisments';
 
 interface AdFormProps {
   defaultValues?: NewAdvertisment;
@@ -13,12 +13,7 @@ interface AdFormProps {
   onReset?: () => void;
 }
 
-const AdForm: React.FC<AdFormProps> = ({
-  defaultValues,
-  onSubmit,
-  isPending,
-  onReset,
-}) => {
+const AdForm: React.FC<AdFormProps> = ({ defaultValues, onSubmit, isPending, onReset }) => {
   const {
     register,
     handleSubmit,
@@ -26,15 +21,13 @@ const AdForm: React.FC<AdFormProps> = ({
     reset,
     watch,
   } = useForm<NewAdvertisment>({
-    resolver: yupResolver(adSchema),
+    resolver: yupResolver(adValidationSchema),
     defaultValues,
     mode: 'onChange',
   });
 
   const watchImageUrl = watch('imageUrl');
-  const [previewUrl, setPreviewUrl] = useState<string | undefined>(
-    defaultValues?.imageUrl,
-  );
+  const [previewUrl, setPreviewUrl] = useState<string | undefined>(defaultValues?.imageUrl);
 
   useEffect(() => {
     if (!errors.imageUrl && watchImageUrl) {
@@ -67,6 +60,7 @@ const AdForm: React.FC<AdFormProps> = ({
         error={!!errors.name}
         helperText={errors.name?.message}
         margin="normal"
+        autoComplete="off"
       />
       <TextField
         fullWidth
@@ -77,6 +71,7 @@ const AdForm: React.FC<AdFormProps> = ({
         error={!!errors.description}
         helperText={errors.description?.message}
         margin="normal"
+        autoComplete="off"
       />
       <TextField
         fullWidth
@@ -86,6 +81,7 @@ const AdForm: React.FC<AdFormProps> = ({
         error={!!errors.price}
         helperText={errors.price?.message}
         margin="normal"
+        autoComplete="off"
       />
       <TextField
         fullWidth
@@ -95,6 +91,7 @@ const AdForm: React.FC<AdFormProps> = ({
         helperText={errors.imageUrl?.message}
         margin="normal"
         onFocus={(e) => e.target.select()}
+        autoComplete="off"
       />
 
       {previewUrl ? (

@@ -14,9 +14,7 @@ type PageParam = {
   _price?: number;
 };
 
-export type NewAdvertisment = Required<
-  Pick<Advertisment, 'imageUrl' | 'description' | 'price' | 'name'>
->;
+export type NewAdvertisment = Required<Pick<Advertisment, 'imageUrl' | 'description' | 'price' | 'name'>>;
 
 type AdvertismentFeed = {
   data: Advertisment[];
@@ -37,13 +35,11 @@ export const useGetAllAdsForSearch = () => {
   });
 };
 
-const getAllAdvertisments = async (pageParam: PageParam) => {
-  const response = await axios.get<AdvertismentFeed>(
-    `${API_URL}/advertisements`,
-    {
-      params: pageParam,
-    },
-  );
+const getAllAdvertisments = async (pageParam: PageParam, signal: AbortSignal) => {
+  const response = await axios.get<AdvertismentFeed>(`${API_URL}/advertisements`, {
+    params: pageParam,
+    signal,
+  });
   return response.data;
 };
 export const useGetAllAdvertisments = (
@@ -51,18 +47,21 @@ export const useGetAllAdvertisments = (
   currentPage: number,
   views?: number,
   likes?: number,
-  price?: number,
+  price?: number
 ) => {
   return useQuery({
     queryKey: ['advertisments', perPage, currentPage, views, likes, price],
-    queryFn: () =>
-      getAllAdvertisments({
-        _page: currentPage,
-        _per_page: perPage,
-        ...(views && { views_gte: views }),
-        ...(likes && { likes_gte: likes }),
-        ...(price && { price_gte: price }),
-      }),
+    queryFn: async ({ signal }) =>
+      getAllAdvertisments(
+        {
+          _page: currentPage,
+          _per_page: perPage,
+          ...(views && { views_gte: views }),
+          ...(likes && { likes_gte: likes }),
+          ...(price && { price_gte: price }),
+        },
+        signal
+      ),
   });
 };
 const createAdvertisment = async (newAd: NewAdvertisment) => {
@@ -92,9 +91,7 @@ export const useCreateAdvertisment = () => {
 };
 
 const getAdvertisment = async (id: string) => {
-  const response = await axios.get<Advertisment>(
-    `${API_URL}/advertisements/${id}`,
-  );
+  const response = await axios.get<Advertisment>(`${API_URL}/advertisements/${id}`);
   return response.data;
 };
 
@@ -106,14 +103,8 @@ export const useGetAdvertisment = (id: string) => {
   });
 };
 
-const patchAdvertisment = async (
-  id: string,
-  updatedData: Partial<Advertisment>,
-) => {
-  const response = await axios.patch(
-    `${API_URL}/advertisements/${id}`,
-    updatedData,
-  );
+const patchAdvertisment = async (id: string, updatedData: Partial<Advertisment>) => {
+  const response = await axios.patch(`${API_URL}/advertisements/${id}`, updatedData);
   return response.data;
 };
 

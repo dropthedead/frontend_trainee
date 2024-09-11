@@ -49,17 +49,33 @@ const FilterAds: React.FC<FilterProps> = ({ onFilter, onReset, initialValues }) 
           fullWidth
           {...register('views')}
           onChange={handleInputChange}
+          autoComplete="off"
         />
-        <TextField label="Минимум лайков" type="number" fullWidth {...register('likes')} onChange={handleInputChange} />
+        <TextField
+          label="Минимум лайков"
+          type="number"
+          fullWidth
+          {...register('likes')}
+          onChange={handleInputChange}
+          autoComplete="off"
+        />
         <TextField
           label="Минимальная цена"
           type="number"
           fullWidth
           {...register('price')}
           onChange={handleInputChange}
+          autoComplete="off"
         />
         <Box sx={{ display: 'flex', gap: '10px', alignItems: 'baseline' }}>
-          <Button type="submit" size="medium" variant="contained" fullWidth color="primary" sx={{ p: 2 }}>
+          <Button
+            type="submit"
+            size="medium"
+            variant="contained"
+            fullWidth
+            color="primary"
+            sx={{ p: 2 }}
+          >
             Отфильтровать
           </Button>
           <Button

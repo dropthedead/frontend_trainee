@@ -1,18 +1,12 @@
 import { Box, Modal, IconButton, Typography } from '@mui/material';
 import { Close } from '@mui/icons-material';
-import { useCreateAdvertisment } from '@/api';
+import { useCreateAdvertisment } from '@/api/advertisments';
 import { useNavigate } from 'react-router-dom';
 import AdForm from '@/components/AdForm';
 
-import type { NewAdvertisment } from '@/api';
+import type { NewAdvertisment } from '@/api/advertisments';
 
-const CreateAdModal = ({
-  isOpen,
-  handleClose,
-}: {
-  isOpen: boolean;
-  handleClose: () => void;
-}) => {
+const CreateAdModal = ({ isOpen, handleClose }: { isOpen: boolean; handleClose: () => void }) => {
   const { mutate, isPending } = useCreateAdvertisment();
   const navigate = useNavigate();
 
@@ -26,7 +20,10 @@ const CreateAdModal = ({
   };
 
   return (
-    <Modal open={isOpen} onClose={handleClose}>
+    <Modal
+      open={isOpen}
+      onClose={handleClose}
+    >
       <Box
         sx={{
           position: 'relative',
@@ -62,7 +59,10 @@ const CreateAdModal = ({
             <Close />
           </IconButton>
         </Box>
-        <AdForm onSubmit={onSubmit} isPending={isPending} />
+        <AdForm
+          onSubmit={onSubmit}
+          isPending={isPending}
+        />
       </Box>
     </Modal>
   );

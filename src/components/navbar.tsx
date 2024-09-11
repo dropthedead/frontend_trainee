@@ -9,18 +9,32 @@ interface NavbarProps {
 
 const Navbar = ({ toggleTheme, isDarkMode }: NavbarProps) => {
   return (
-    <AppBar position="sticky">
+    <AppBar
+      position="sticky"
+      sx={{ height: '64px', zIndex: 9999 }}
+    >
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Box>
-          <Button color="inherit" component={Link} to={`${home}`}>
+          <Button
+            color="inherit"
+            component={Link}
+            to={`${home}`}
+          >
             Мои Объявления
           </Button>
-          <Button color="inherit" component={Link} to={`${orders}`}>
+          <Button
+            color="inherit"
+            component={Link}
+            to={`${orders}`}
+          >
             Заказы
           </Button>
         </Box>
         <Box>
-          <IconButton color="inherit" onClick={toggleTheme}>
+          <IconButton
+            color="inherit"
+            onClick={toggleTheme}
+          >
             {isDarkMode ? <Brightness7 /> : <Brightness4 />}
           </IconButton>
         </Box>

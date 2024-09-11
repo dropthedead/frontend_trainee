@@ -1,35 +1,22 @@
 import { useState } from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
-  Button,
-} from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  useDeleteAdvertisment,
-  useGetAdvertisment,
-  usePatchAdvertisment,
-} from '@/api';
+import { useDeleteAdvertisment, useGetAdvertisment, usePatchAdvertisment } from '@/api/advertisments';
 import { Favorite, Visibility } from '@mui/icons-material';
 import AdForm from '@/components/AdForm';
 
-import type { NewAdvertisment } from '@/api';
+import type { NewAdvertisment } from '@/api/advertisments';
 import { formatPrice } from '@/utils/formatPrice';
 import { Loader } from '@/components/common/loader';
+import CreateAdButton from '@/components/CreateAdButton';
+import { home } from '@/router/paths';
 
 const Advertisment = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data, isLoading, refetch } = useGetAdvertisment(id || '');
-
   const [isEditing, setIsEditing] = useState(false);
-
-  const { mutate: patchAdvertisment, isPending } = usePatchAdvertisment(
-    id || '',
-  );
+  const { mutate: patchAdvertisment, isPending } = usePatchAdvertisment(id || '');
   const { mutate: deleteAdvertisment } = useDeleteAdvertisment(id || '');
 
   const handleEditToggle = () => {
@@ -39,7 +26,7 @@ const Advertisment = () => {
   const handleDeleteAd = (id: string) => {
     deleteAdvertisment(id, {
       onSuccess: () => {
-        navigate('/');
+        navigate(`${home}`);
       },
     });
   };
@@ -65,8 +52,11 @@ const Advertisment = () => {
             height: '100%',
             width: '100%',
             padding: 4,
+            flexDirection: 'column',
+            gap: '20px',
           }}
         >
+          <CreateAdButton />
           <Card sx={{ width: '100%', maxWidth: '100%' }}>
             {isEditing ? (
               <AdForm
@@ -118,7 +108,10 @@ const Advertisment = () => {
                         marginLeft: 'auto',
                       }}
                     >
-                      <Typography variant="h4" component="div">
+                      <Typography
+                        variant="h4"
+                        component="div"
+                      >
                         {formatPrice(data?.price ?? 0)}
                       </Typography>
                     </Box>
@@ -149,7 +142,11 @@ const Advertisment = () => {
                 )}
 
                 <CardContent>
-                  <Typography variant="h4" color="text.primary" gutterBottom>
+                  <Typography
+                    variant="h4"
+                    color="text.primary"
+                    gutterBottom
+                  >
                     Описание:
                   </Typography>
                   <Typography
@@ -164,20 +161,25 @@ const Advertisment = () => {
                   >
                     {data?.description}
                   </Typography>
-                  <Box
-                    sx={{ display: 'flex', alignItems: 'center', marginTop: 2 }}
-                  >
-                    <Favorite color="error" sx={{ marginRight: 1 }} />
-                    <Typography variant="h5" sx={{ marginRight: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 2 }}>
+                    <Favorite
+                      color="error"
+                      sx={{ marginRight: 1 }}
+                    />
+                    <Typography
+                      variant="h5"
+                      sx={{ marginRight: 2 }}
+                    >
                       {data?.likes}
                     </Typography>
-                    <Visibility color="action" sx={{ marginRight: 1 }} />
+                    <Visibility
+                      color="action"
+                      sx={{ marginRight: 1 }}
+                    />
                     <Typography variant="h5">{data?.views}</Typography>
                   </Box>
                 </CardContent>
-                <CardContent
-                  sx={{ display: 'flex', justifyContent: 'flex-end' }}
-                >
+                <CardContent sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <Button
                     variant="contained"
                     color="warning"

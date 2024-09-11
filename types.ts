@@ -18,7 +18,7 @@ export type Advertisment = {
   imageUrl?: string;
 };
 
-const OrderStatus = {
+export const OrderStatus = {
   Created: 0,
   Paid: 1,
   Transport: 2,
@@ -28,9 +28,9 @@ const OrderStatus = {
   Refund: 6,
 } as const;
 
-type OrderItem = Advertisment & { count: number };
+export type OrderItem = Advertisment & { count: number };
 
-type Order = {
+export type Order = {
   /* Уникальный идентификатор. */
   id: string;
   /* Статус. */
@@ -54,4 +54,33 @@ type Image = {
   url: string;
   /* Название. */
   name: string;
+};
+
+export type OrderStatusKeys = keyof typeof OrderStatus;
+export type OrderStatusValues = (typeof OrderStatus)[OrderStatusKeys];
+
+export const DeliveryWayLabel: Record<string, string> = {
+  mail: 'Почта',
+  sdek: 'СДЭК',
+  courier: 'Курьер',
+};
+
+export type FormValues = {
+  id: string;
+  status: OrderStatusValues;
+  deliveryWay: keyof typeof DeliveryWayLabel;
+  items: { id: string; name: string; price: number; count: number }[];
+  total: number;
+};
+
+type Keys = keyof typeof OrderStatus;
+export type Values = (typeof OrderStatus)[Keys];
+export const OrderStatusLabel: Record<Values, string> = {
+  0: 'Создан',
+  1: 'Оплачен',
+  2: 'В пути',
+  3: 'Доставлен',
+  4: 'Получен',
+  5: 'Архивирован',
+  6: 'Возврат средств',
 };
